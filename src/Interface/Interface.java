@@ -61,6 +61,11 @@ public class Interface extends javax.swing.JFrame {
         jListLista.setModel(modelo);
     }
 
+    public void EliminarElementos(String IP, int PORT) {
+        modelo.removeElement(String.valueOf(IP + ":" + PORT));
+        jListLista.setModel(modelo);
+    }
+
     public void AgregarAnterior(String text) {
         jTextFieldAnterior.setText(text);
     }
@@ -299,8 +304,8 @@ public class Interface extends javax.swing.JFrame {
             Object opcion = JOptionPane.showInputDialog(null,
                     "Select un MD5:\n ", "ShowInputDialog",
                     JOptionPane.PLAIN_MESSAGE, null, Iguales.toArray(), "Numbers");
-            
-           Seleccionado = new Stack<>();
+
+            Seleccionado = new Stack<>();
             for (String s : ListaEncontrados) {
                 String aux[] = s.split(Pattern.quote(":"));
                 if (aux[2].equals(String.valueOf(opcion))) {
@@ -310,7 +315,7 @@ public class Interface extends javax.swing.JFrame {
 
             String total = 1 + "/" + Seleccionado.size();
             jTextAreaTexto.setText(jTextAreaTexto.getText() + "\n" + "Se obtiene: " + total + " de cada nodo.");
-            
+
             int j = 0;
             for (String s : ListaEncontrados) {
                 cad = s.split(Pattern.quote(":"));

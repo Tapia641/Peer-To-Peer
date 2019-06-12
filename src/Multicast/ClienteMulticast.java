@@ -16,6 +16,8 @@ import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Stack;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -31,9 +33,11 @@ public class ClienteMulticast extends Thread {
     private NodoIP MiNodo;
     private Vector<Integer> V;
     private Hashtable<Integer, String> ListaNodos;
+    private Hashtable<Pair<String, Integer>, Integer> ListaTiempo;
     private Pair<String, Integer> P, PSiguiente, PAnterior;
     private ServidorDatagrama SD;
     public Vector<Pair<String, Integer>> Temporizador;
+    private boolean cambio;
 
     public ClienteMulticast(int PORT) {
         this.PORT = PORT;
@@ -67,6 +71,8 @@ public class ClienteMulticast extends Thread {
         ListaNodos = new Hashtable<Integer, String>();
         MiNodo = new NodoIP();
         Temporizador = new Stack<>();
+        ListaTiempo = new Hashtable<>();
+        cambio = true;
 
         try {
 
@@ -107,9 +113,44 @@ public class ClienteMulticast extends Thread {
                 P = new Pair<>(IPaux, LocalPort);
 
                 /*VAMOS ACTUALIZANDO TEMPORIZADOR*/
-//                if (Temporizador.contains(P)) {
-//                                        
-//                }
+                if (!ListaTiempo.containsKey(P)) {
+
+                    ListaTiempo.put(P, 11);
+
+                    /*DECREMENTAMOS EL TIEMPO*/
+                    for (Map.Entry<Pair<String, Integer>, Integer> entry : ListaTiempo.entrySet()) {
+                        Pair<String, Integer> key = entry.getKey();
+                        Integer value = entry.getValue();
+                        ListaTiempo.replace(key, value - 1);
+                    }
+
+                } else {
+
+                    /*DECREMENTAMOS EL TIEMPO*/
+                    for (Map.Entry<Pair<String, Integer>, Integer> entry : ListaTiempo.entrySet()) {
+                        Pair<String, Integer> key = entry.getKey();
+                        Integer value = entry.getValue();
+                        ListaTiempo.replace(key, value - 1);
+
+                        /*REMOVEMOS DE LA LISTA Y ACTUALIZAMOS LA TOPOLOGIA*/
+                        if (value <= 0) {
+                            Ventana.EliminarElementos(key.getKey(), key.getValue());
+                            V.remove(key.getValue());
+                            Collections.sort(V);
+                            ListaTiempo.remove(key, value);
+                        }
+                    }
+
+                    ListaTiempo.replace(P, 11);
+                }
+
+                /*COMPROBAMOS QUE ESTEN ACTIVOS*/
+                for (Map.Entry<Pair<String, Integer>, Integer> entry : ListaTiempo.entrySet()) {
+
+                    Pair<String, Integer> key = entry.getKey();
+                    Integer value = entry.getValue();
+
+                }
 
                 /*SI ES UNO NUEVO*/
                 if (!V.contains(LocalPort)) {
@@ -125,6 +166,9 @@ public class ClienteMulticast extends Thread {
                     Ventana.ActualizarHastable(ListaNodos);
 
                 } else if (V.size() > 2) {
+
+                    cambio = true;
+
                     System.out.println("Actual: " + P.getKey() + ":" + PORT);
                     MiNodo.setActual(P);
 
@@ -173,6 +217,42 @@ public class ClienteMulticast extends Thread {
 
                     //CD.ActualizarNodo(MiNodo);
                     Ventana.ActualizarNodo(MiNodo);
+
+                } else if (V.size() == 2) {
+
+                    if (cambio) {
+                        MiNodo.setActual(P);
+                        int Pos = V.indexOf(PORT);
+
+                        if (Pos == 0) {
+
+                            PAnterior = new Pair<>(P.getKey(), P.getValue());
+                            PSiguiente = new Pair<>(ListaNodos.get(V.get(1)), V.get(1));
+
+                            Ventana.AgregarSiguiente(PSiguiente.getKey() + ":" + PSiguiente.getValue());
+                            Ventana.AgregarAnterior(P.getKey() + ":" + P.getValue());
+
+                            MiNodo.setSiguiente(PSiguiente);
+                            MiNodo.setAnterior(PAnterior);
+
+                            Ventana.ActualizarNodo(MiNodo);
+
+                        } else {
+
+                            PAnterior = new Pair<>(P.getKey(), P.getValue());
+                            PSiguiente = new Pair<>(ListaNodos.get(V.get(0)), V.get(0));
+
+                            Ventana.AgregarSiguiente(PSiguiente.getKey() + ":" + PSiguiente.getValue());
+                            Ventana.AgregarAnterior(P.getKey() + ":" + P.getValue());
+
+                            MiNodo.setSiguiente(PSiguiente);
+                            MiNodo.setAnterior(PAnterior);
+
+                            Ventana.ActualizarNodo(MiNodo);
+                        }
+
+                        cambio = false;
+                    }
 
                 }
 
