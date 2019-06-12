@@ -53,7 +53,7 @@ public class ServidorArchivo extends Thread {
             String url ="C:\\Users\\" + user + "\\Documents\\";
             
             bos = new BufferedOutputStream(new FileOutputStream(url + PORT + "\\" + file));
-            JOptionPane.showMessageDialog(null, "Se guarda en : " + PORT);
+            //JOptionPane.showMessageDialog(null, "Se guarda en : " + PORT);
             while ((in = bis.read(receivedData)) != -1) {
                 bos.write(receivedData, 0, in);
             }

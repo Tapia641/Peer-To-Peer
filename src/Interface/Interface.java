@@ -22,6 +22,7 @@ import java.util.Stack;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javafx.util.Pair;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
@@ -182,12 +183,12 @@ public class Interface extends javax.swing.JFrame {
                 if (i == V.size() - 2) {
                     /*CREAMOS UNA INSTANCIA*/
                     ClientTexto = new CTCPB(MiNodo.getActual().getKey(), MiNodo.getActual().getValue(),
-                            "Tengo el archivo: " + archivo + "."
-                            + MiNodo.getSiguiente().getKey() + ":" + MiNodo.getSiguiente().getValue());
+                            "Tengo el archivo: " + archivo + ".");
 
                     /*LO EJECUTAMOS*/
                     ClientTexto.Cliente();
 
+                    /*OBTENEMOS EL MD5*/
                     File user = new File(System.getProperty("user.name"));
                     String url = "C:\\Users\\" + user + "\\Documents\\" + MiNodo.getActual().getValue() + "\\" + archivo;
                     MD5Checksum MD = new MD5Checksum();
@@ -216,6 +217,7 @@ public class Interface extends javax.swing.JFrame {
                     /*LO EJECUTAMOS*/
                     ClientTexto.Cliente();
 
+                    /*OBTENEMOS EL MD5*/
                     File user = new File(System.getProperty("user.name"));
                     String url = "C:\\Users\\" + user + "\\Documents\\" + MiNodo.getActual().getValue() + "\\" + archivo;
                     MD5Checksum MD = new MD5Checksum();
@@ -243,7 +245,7 @@ public class Interface extends javax.swing.JFrame {
                 //break;
             } else {
 
-                if (i == V.size() - 2) {
+                if (i == V.size() - 1) {
                     /*CUANDO LLEGAMOS AL ÚLTIMO NODO*/
                     String text = "Terminó la busqueda.";
 
@@ -283,6 +285,41 @@ public class Interface extends javax.swing.JFrame {
                 texto_mostrar += textoaux + "\n";
             }
             jTextAreaTexto.setText(jTextAreaTexto.getText() + "\n" + "Se encontró en :\n" + texto_mostrar);
+
+            /*PROCEDEMOS A DESCARGAR*/
+            Vector<String> Iguales = new Stack<>();
+            String cad[];
+
+            for (String encontrado : ListaEncontrados) {
+                cad = encontrado.split(Pattern.quote(":"));
+                if (!Iguales.contains(cad[2])) {
+                    Iguales.add(cad[2]);
+                }
+            }
+
+            JOptionPane.showMessageDialog(null, "Se encontró los siguientes MD5 para el mismo archivo\n"
+                    + Iguales.toString());
+
+            String total = 1 + "/" + ListaEncontrados.size();
+            jTextAreaTexto.setText(jTextAreaTexto.getText() + "\n" + "Se obtiene: " + total + " de cada nodo.");
+            int j = 0;
+            for (String s : ListaEncontrados) {
+                cad = s.split(Pattern.quote(":"));
+
+                if (Iguales.contains(cad[2])) {
+                    j++;
+                    try {
+                        RecibirArchivo(cad[0], PORT, Integer.parseInt(cad[1]), archivo, "Parte: " + j);
+                    } catch (IOException ex) {
+                        Logger.getLogger(Interface.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(Interface.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    //break;
+                }
+
+            }
+
             ListaEncontrados.clear();
         } else {
             JOptionPane.showMessageDialog(null, "No se encontró el archivo en la topología.");
@@ -304,17 +341,20 @@ public class Interface extends javax.swing.JFrame {
         }
     }
 
-    public void RecibirArchivo(String IP, int PortDestino, int PortOrigen, String nombre_archivo) throws IOException, InterruptedException {
-        JOptionPane.showMessageDialog(null, "Descargando de: " + PortOrigen + " A: " + PortDestino);
+    public void RecibirArchivo(String IP, int PortDestino, int PortOrigen, String nombre_archivo, String parte) throws IOException, InterruptedException {
+        JOptionPane.showMessageDialog(null, "Descargando de: " + PortOrigen + " A: " + PortDestino + " " + parte);
 
-        //Donde se va a guardar
-        ServidorArchivo SA = new ServidorArchivo(nombre_archivo, PortDestino);
-        SA.start();
-        sleep(1000);
+        if (parte.equals("Parte: " + String.valueOf(ListaEncontrados.size() - 1))) {
+            //Donde se va a guardar
+            ServidorArchivo SA = new ServidorArchivo(nombre_archivo, PortDestino);
+            SA.start();
+            sleep(1000);
 
-        //Fichero a transferir     
-        ClienteArchivo CA = new ClienteArchivo(nombre_archivo, PortOrigen, IP);
-        CA.start();
+            //Fichero a transferir     
+            ClienteArchivo CA = new ClienteArchivo(nombre_archivo, PortOrigen, IP);
+            CA.start();
+        }
+
     }
 
     public void Mueve() {

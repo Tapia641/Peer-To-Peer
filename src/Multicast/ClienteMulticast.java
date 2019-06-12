@@ -1,5 +1,4 @@
 /*AUTOR: HERNÁNDEZ TAPIA LUIS ENRIQUE*/
-
 package Multicast;
 
 /*
@@ -7,7 +6,6 @@ OBJETIVO:
 EXTRAER LA DIRECCION IP DEL ANUNCIANTE Y EL NUMERO DE PUERTO
 DEL SERVIDOR DE DATAGRAMAS DEL SERVIDOR ANUNCIANTE.
  */
-
 import Classes.ListaCircular;
 import Classes.NodoIP;
 import Datagrama.ServidorDatagrama;
@@ -32,9 +30,10 @@ public class ClienteMulticast extends Thread {
     public int PORT;
     private NodoIP MiNodo;
     private Vector<Integer> V;
-    private Hashtable<Integer,String> ListaNodos;
+    private Hashtable<Integer, String> ListaNodos;
     private Pair<String, Integer> P, PSiguiente, PAnterior;
     private ServidorDatagrama SD;
+    public Vector<Pair<String, Integer>> Temporizador;
 
     public ClienteMulticast(int PORT) {
         this.PORT = PORT;
@@ -67,6 +66,7 @@ public class ClienteMulticast extends Thread {
         V = new Stack<>();
         ListaNodos = new Hashtable<Integer, String>();
         MiNodo = new NodoIP();
+        Temporizador = new Stack<>();
 
         try {
 
@@ -91,8 +91,7 @@ public class ClienteMulticast extends Thread {
             while (true) {
 
                 /* ----------------COMENZAMOS A RECIBIR EL MENSAJE------------------ */
-                
-                /* OBTENEMOS EL MENSAJE DEL SERVIDOR */
+ /* OBTENEMOS EL MENSAJE DEL SERVIDOR */
                 DatagramPacket paqueteServidor = new DatagramPacket(new byte[100], 100);
                 clienteSocket.receive(paqueteServidor);
 
@@ -100,26 +99,31 @@ public class ClienteMulticast extends Thread {
                 String mensaje = new String(paqueteServidor.getData());
                 int LocalPort = (int) Double.parseDouble(mensaje);
                 System.out.println("Datagrama recibido: " + paqueteServidor.getAddress() + LocalPort);
-                
+
                 /*AGREGAMAOS UN NODO*/
                 String IPaux = String.valueOf(paqueteServidor.getAddress());
                 IPaux = IPaux.replaceAll(Pattern.quote("/"), "");
-                
+
                 P = new Pair<>(IPaux, LocalPort);
-                
+
+                /*VAMOS ACTUALIZANDO TEMPORIZADOR*/
+                //if (Temporizador.contains(P)) {
+                    
+                //}
+
                 /*SI ES UNO NUEVO*/
                 if (!V.contains(LocalPort)) {
                     V.add(LocalPort);
                     Collections.sort(V);
-                    
+
                     /*AGREGAMOS AL HASTABLE LA NUEVA DIRECCION*/
                     ListaNodos.put(LocalPort, IPaux);
-                    
+
                     /*ACTUALIZAMOS LA LISTA DE DIRECCIONES IP Y PUERTOS*/
                     Ventana.AgregarElementos(IPaux, LocalPort);
                     Ventana.ActualizarVector(V);
                     Ventana.ActualizarHastable(ListaNodos);
-                    
+
                 } else if (V.size() > 2) {
                     System.out.println("Actual: " + P.getKey() + ":" + PORT);
                     MiNodo.setActual(P);
@@ -138,7 +142,7 @@ public class ClienteMulticast extends Thread {
 
                         MiNodo.setSiguiente(PSiguiente);
                         MiNodo.setAnterior(PAnterior);
-                        
+
                     } else if (Pos == V.size() - 1) {
                         //System.out.println("Anterior: " + V.get(Pos - 1));
                         //System.out.println("Siguiente: " + V.get(0));
@@ -151,7 +155,7 @@ public class ClienteMulticast extends Thread {
 
                         MiNodo.setSiguiente(PSiguiente);
                         MiNodo.setAnterior(PAnterior);
-                        
+
                     } else {
                         //System.out.println("Anterior: " + V.get(Pos - 1));
                         //System.out.println("Siguiente: " + V.get(Pos + 1));
@@ -164,11 +168,12 @@ public class ClienteMulticast extends Thread {
 
                         MiNodo.setSiguiente(PSiguiente);
                         MiNodo.setAnterior(PAnterior);
-                        
+
                     }
 
                     //CD.ActualizarNodo(MiNodo);
                     Ventana.ActualizarNodo(MiNodo);
+
                 }
 
             }
