@@ -45,7 +45,12 @@ public class ServidorArchivo extends Thread {
             file = file.substring(file.indexOf('\\') + 1, file.length());
             //Para guardar fichero recibido
 
-            bos = new BufferedOutputStream(new FileOutputStream("C:\\Users\\Tapia\\Desktop\\" + PORT + "\\" + file));
+                    
+            /*OBTENEMOS EL USUARIO DE CADA COMPUTADORA*/
+            File user = new File(System.getProperty("user.name"));
+            String url ="C:\\Users\\" + user + "\\Documents\\";
+            
+            bos = new BufferedOutputStream(new FileOutputStream(url + PORT + "\\" + file));
             JOptionPane.showMessageDialog(null, "Se guarda en : " + PORT);
             while ((in = bis.read(receivedData)) != -1) {
                 bos.write(receivedData, 0, in);

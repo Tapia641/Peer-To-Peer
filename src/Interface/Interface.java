@@ -15,6 +15,7 @@ import java.io.PrintWriter;
 import static java.lang.Thread.sleep;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -23,10 +24,6 @@ import javafx.util.Pair;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
 
-/**
- *
- * @author Tapia
- */
 public class Interface extends javax.swing.JFrame {
 
     public DefaultListModel modelo;
@@ -35,6 +32,7 @@ public class Interface extends javax.swing.JFrame {
     public int PORT;
     public ClienteDatagrama CD;
     public Vector<Integer> V;
+    public Hashtable<Integer,String> ListaNodos;
     public Pair<String, Integer> P, PSiguiente, PAnterior;
     public STCPB ServerTexto;
     public CTCPB ClientTexto;
@@ -50,12 +48,14 @@ public class Interface extends javax.swing.JFrame {
         ST.start();
 
     }
+    
+    public void ActualizarHastable(Hashtable<Integer,String> ListaNodos){
+        this.ListaNodos = ListaNodos;
+    }
 
     public void AgregarElementos(String IP, int PORT) {
         modelo.addElement(String.valueOf(IP + ":" + PORT));
         jListLista.setModel(modelo);
-        //this.PORT = PORT;
-        //this.IP = IP;
     }
 
     public void AgregarAnterior(String text) {
@@ -166,32 +166,30 @@ public class Interface extends javax.swing.JFrame {
         NodoIP Aux = MiNodo;
 
         while (i != V.size()) {
-            //texto = "Se busca en: " + MiNodo.getActual().getKey() + ":" + MiNodo.getActual().getValue() + "\n";
-/*
-            ClientTexto = new CTCPB("127.0.0.1", MiNodo.getActual().getValue(),
-                    "El servidor: " + MiNodo.getAnterior().getKey() + ":"
-                    + MiNodo.getAnterior().getValue()
-                    + " Preguntó por el archivo: " + archivo);
-            ClientTexto.Cliente();
-             */
-
+            
             if (Existe(archivo, MiNodo.getActual().getValue())) {
 
+                /*CREAMOS EL TEXTO A MOSTRAR EN LA VENTANA*/
                 texto = "Se encontró el archivo en: " + MiNodo.getActual().getKey()
                         + ":" + MiNodo.getActual().getValue()
                         + " procedemos a descargarlo " + "\n";
+                
+                /*SE LO MANDAMOS*/
                 jTextAreaTexto.setText(texto);
-
-                ClientTexto = new CTCPB("127.0.0.1", MiNodo.getActual().getValue(),
+                System.out.println(MiNodo.getActual().getKey());
+                
+                ClientTexto = new CTCPB(MiNodo.getActual().getKey(), MiNodo.getActual().getValue(),
                         "Tengo el archivo: " + archivo);
                 ClientTexto.Cliente();
 
+                //TODAVIA NO DEBE DESCARGAR
                 try {
                     RecibirArchivo(MiNodo.getActual().getKey(), PORT, MiNodo.getActual().getValue(), archivo);
 
                 } catch (IOException | InterruptedException ex) {
-                    Logger.getLogger(Interface.class.getName()).log(Level.SEVERE, null, ex);
+                    ex.printStackTrace();
                 }
+                
 
                 break;
 
@@ -202,7 +200,7 @@ public class Interface extends javax.swing.JFrame {
                         + " No lo tengo, pregunto a: " + MiNodo.getSiguiente().getKey() + ":"
                         + MiNodo.getSiguiente().getValue();
 
-                ClientTexto = new CTCPB("127.0.0.1", MiNodo.getActual().getValue(), text
+                ClientTexto = new CTCPB(MiNodo.getActual().getKey(), MiNodo.getActual().getValue(), text
                 );
 
                 ClientTexto.Cliente();
@@ -224,8 +222,13 @@ public class Interface extends javax.swing.JFrame {
 
     }//GEN-LAST:event_jButtonBuscarMouseClicked
 
-    public static boolean Existe(String nombre, int pos) {
-        File filearchivo = new File("C:\\Users\\Tapia\\Desktop\\" + pos + "\\" + nombre);
+    public static boolean Existe(String nombre_archivo, int pos) {
+        
+        /*OBTENEMOS EL USUARIO DE CADA COMPUTADORA*/
+        File user = new File(System.getProperty("user.name"));
+        String url ="C:\\Users\\" + user + "\\Documents\\" + pos  + "\\" + nombre_archivo;
+        File filearchivo = new File(url);
+        
         if (filearchivo.exists()) {
             return true;
         } else {
@@ -234,15 +237,14 @@ public class Interface extends javax.swing.JFrame {
     }
 
     public void RecibirArchivo(String IP, int PortDestino, int PortOrigen, String nombre) throws IOException, InterruptedException {
-
+        JOptionPane.showMessageDialog(null, "Descargando de: " + PortOrigen + " A: " + PortDestino);
+        
         //Donde se va a guardar
-        //JOptionPane.showMessageDialog(null, "Donde se va a guardar: " + PORT);
         ServidorArchivo SA = new ServidorArchivo(nombre, PortDestino);
         SA.start();
         sleep(1000);
 
         //Fichero a transferir     
-        //JOptionPane.showMessageDialog(null, "Origen: " + delista);
         ClienteArchivo CA = new ClienteArchivo(nombre, PortOrigen);
         CA.start();
     }
@@ -296,9 +298,12 @@ public class Interface extends javax.swing.JFrame {
         }
 
         public void IniciarservidorTexto() {
+            
             String infoCliente = "";
             /* SIEMPRE PONER EL SOCKET EN UN TRY-CATCH */
+            
             try {
+                
                 /* PUERTO EN EL QUE ESCUCHA PETICIONES */
                 ServerSocket socketServidor = new ServerSocket(PORT);
                 System.out.println("Esperando peticiones...");
@@ -306,9 +311,7 @@ public class Interface extends javax.swing.JFrame {
                 while (true) {
                     /* BLOQUEO HASTA QUE RECIBA ALGUNA PETICION DEL CLIENTE */
                     Socket socketCliente = socketServidor.accept();
-                    //System.out.println(
-                    //      "Conexion establecida desde " + socketCliente.getInetAddress() + ":" + socketCliente.getPort());
-
+                    
                     /* ESTABLECEMOS EL CANAL DE ENTRADA */
                     BufferedReader entrada = new BufferedReader(new InputStreamReader(socketCliente.getInputStream()));
 
@@ -317,23 +320,14 @@ public class Interface extends javax.swing.JFrame {
 
                     /* RECIBIMOS INFORMACION DEL CLIENTE */
                     infoCliente = entrada.readLine();
-                    //System.err.println("Recibimos un mensaje del cliente " + infoCliente);
-                    //System.out.println("Mensaje: " + infoCliente);
-
+                    
                     /* ENVIAMOS INFORMACION AL CLIENTE */
-                    //System.out.println("Enviando respuesta...");
-                    //String resCliente = "Hola cliente, soy el servidor.";
-                    //salida.println(resCliente);
-                    // SE LIMPIA EL FLUJO EN ORDEN
                     jTextAreaTexto.setText(infoCliente + "\n");
 
                     salida.flush();
                     salida.close();
                     entrada.close();
 
-//                    jTextAreaTexto.setText(jTextAreaTexto.getText() +"\n"+ MiNodo.getActual().);
-                    //socketCliente.close();
-                    // NOTA: EL SOCKET DEL SERVIDOR NUNCA SE CIERRA socketServidor.close();
                 }
             } catch (Exception e) {
                 e.printStackTrace();

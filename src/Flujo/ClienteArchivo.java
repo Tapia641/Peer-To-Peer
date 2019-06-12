@@ -27,7 +27,11 @@ public class ClienteArchivo extends Thread{
         byte[] byteArray;
         
         //Fichero a transferir
-        final String filename = "C:\\Users\\Tapia\\Desktop\\" + PORT + "\\" + nombre;
+        
+        /*OBTENEMOS EL USUARIO DE CADA COMPUTADORA*/
+        File user = new File(System.getProperty("user.name"));
+        String url ="C:\\Users\\" + user + "\\Documents\\";
+        final String filename = url + PORT + "\\" + nombre;
 
         try {
             final File localFile = new File(filename);

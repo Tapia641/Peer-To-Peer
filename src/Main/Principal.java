@@ -1,3 +1,5 @@
+/*AUTOR: HERNÁNDEZ TAPIA LUIS ENRIQUE*/
+
 package Main;
 
 import Multicast.ClienteMulticast;
@@ -31,6 +33,8 @@ public class Principal {
         /* TRABAJANDO CON MULTICAST */
         ClienteMulticast CM = new ClienteMulticast(PORT);
         ServidorMulticast SM = new ServidorMulticast(PORT);
+        
+        /*INICIAMOS LOS HILOS*/
         SM.start();
         CM.start();
 

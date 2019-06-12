@@ -1,3 +1,5 @@
+/*AUTOR: HERNÁNDEZ TAPIA LUIS ENRIQUE*/
+
 package Multicast;
 
 /*
@@ -15,10 +17,13 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javafx.util.Pair;
 
 public class ClienteMulticast extends Thread {
@@ -28,6 +33,7 @@ public class ClienteMulticast extends Thread {
     public int PORT;
     private NodoIP MiNodo;
     private Vector<Integer> V;
+    private Hashtable<Integer,String> ListaNodos;
     private Pair<String, Integer> P, PSiguiente, PAnterior;
     private ServidorDatagrama SD;
 
@@ -56,17 +62,16 @@ public class ClienteMulticast extends Thread {
 
         /* CREAMOS EL GRUPO */
         InetAddress grupo = null;
-        //Lista = new ListaCircular();
-        //Lista.agregarAlInicio(PORT);
         Ventana = new Interface(PORT);
         Ventana.setVisible(true);
         Ventana.setTitle(String.valueOf(PORT));
         V = new Stack<>();
+        ListaNodos = new Hashtable<Integer, String>();
         MiNodo = new NodoIP();
 
         try {
 
-            /* SOCKET MULTICAST CON PUERTO 9000 */
+            /* SOCKET MULTICAST CON PUERTO 7999 */
             MulticastSocket clienteSocket = new MulticastSocket(7999);
             System.out.println("Cliente Multicast escuchando puerto " + clienteSocket.getPort());
             clienteSocket.setReuseAddress(true);
@@ -87,6 +92,7 @@ public class ClienteMulticast extends Thread {
             while (true) {
 
                 /* ----------------COMENZAMOS A RECIBIR EL MENSAJE------------------ */
+                
                 /* OBTENEMOS EL MENSAJE DEL SERVIDOR */
                 DatagramPacket paqueteServidor = new DatagramPacket(new byte[100], 100);
                 clienteSocket.receive(paqueteServidor);
@@ -95,19 +101,25 @@ public class ClienteMulticast extends Thread {
                 String mensaje = new String(paqueteServidor.getData());
                 int LocalPort = (int) Double.parseDouble(mensaje);
                 System.out.println("Datagrama recibido: " + paqueteServidor.getAddress() + LocalPort);
-
-                /* DATOS DEL PAQUETE RECIBIDO, EXTRAYENDO INFORMACIÓN */
-                //System.out.println("Servidor descuberto "
-                //      + paqueteServidor.getAddress() + ":" + paqueteServidor.getPort());
-
+                
                 /*AGREGAMAOS UN NODO*/
-                P = new Pair<>(String.valueOf(paqueteServidor.getAddress()), LocalPort);
+                String IPaux = String.valueOf(paqueteServidor.getAddress());
+                IPaux = IPaux.replaceAll(Pattern.quote("/"), "");
+                
+                P = new Pair<>(IPaux, LocalPort);
 
+                /*SI ES UNO NUEVO*/
                 if (!V.contains(LocalPort)) {
                     V.add(LocalPort);
                     Collections.sort(V);
-                    Ventana.AgregarElementos(String.valueOf(paqueteServidor.getAddress()), LocalPort);
+                    
+                    /*AGREGAMOS AL HASTABLE LA NUEVA DIRECCION*/
+                    ListaNodos.put(LocalPort, IPaux);
+                    
+                    /*ACTUALIZAMOS LA LISTA DE DIRECCIONES IP Y PUERTOS*/
+                    Ventana.AgregarElementos(IPaux, LocalPort);
                     Ventana.ActualizarVector(V);
+                    Ventana.ActualizarHastable(ListaNodos);
                     
                 } else if (V.size() > 2) {
                     System.out.println("Actual: " + P.getKey() + ":" + PORT);
@@ -116,41 +128,44 @@ public class ClienteMulticast extends Thread {
                     int Pos = V.indexOf(PORT);
 
                     if (Pos == 0) {
-                        System.out.println("Anterior: " + V.get(V.size() - 1));
-                        System.out.println("Siguiente: " + V.get(Pos + 1));
+                        //System.out.println("Anterior: " + V.get(V.size() - 1));
+                        //System.out.println("Siguiente: " + V.get(Pos + 1));
 
-                        PAnterior = new Pair<>(String.valueOf(paqueteServidor.getAddress()), V.get(V.size() - 1));
-                        PSiguiente = new Pair<>(String.valueOf(paqueteServidor.getAddress()), V.get(Pos + 1));
+                        PSiguiente = new Pair<>(ListaNodos.get(V.get(Pos + 1)), V.get(Pos + 1));
+                        PAnterior = new Pair<>(ListaNodos.get(V.get(V.size() - 1)), V.get(V.size() - 1));
 
-                        Ventana.AgregarSiguiente(String.valueOf(paqueteServidor.getAddress()) + ":" + V.get(Pos + 1));
-                        Ventana.AgregarAnterior(String.valueOf(paqueteServidor.getAddress()) + ":" + V.get(V.size() - 1));
+                        Ventana.AgregarSiguiente(PSiguiente.getKey() + ":" + PSiguiente.getValue());
+                        Ventana.AgregarAnterior(PAnterior.getKey() + ":" + PAnterior.getValue());
 
                         MiNodo.setSiguiente(PSiguiente);
                         MiNodo.setAnterior(PAnterior);
+                        
                     } else if (Pos == V.size() - 1) {
-                        System.out.println("Anterior: " + V.get(Pos - 1));
-                        System.out.println("Siguiente: " + V.get(0));
+                        //System.out.println("Anterior: " + V.get(Pos - 1));
+                        //System.out.println("Siguiente: " + V.get(0));
 
-                        PAnterior = new Pair<>(String.valueOf(paqueteServidor.getAddress()), V.get(Pos - 1));
-                        PSiguiente = new Pair<>(String.valueOf(paqueteServidor.getAddress()), V.get(0));
+                        PAnterior = new Pair<>(ListaNodos.get(V.get(Pos - 1)), V.get(Pos - 1));
+                        PSiguiente = new Pair<>(ListaNodos.get(V.get(0)), V.get(0));
 
-                        Ventana.AgregarSiguiente(String.valueOf(paqueteServidor.getAddress()) + ":" + V.get(0));
-                        Ventana.AgregarAnterior(String.valueOf(paqueteServidor.getAddress()) + ":" + V.get(Pos - 1));
+                        Ventana.AgregarSiguiente(PSiguiente.getKey() + ":" + PSiguiente.getValue());
+                        Ventana.AgregarAnterior(PAnterior.getKey() + ":" + PAnterior.getValue());
 
                         MiNodo.setSiguiente(PSiguiente);
                         MiNodo.setAnterior(PAnterior);
+                        
                     } else {
-                        System.out.println("Anterior: " + V.get(Pos - 1));
-                        System.out.println("Siguiente: " + V.get(Pos + 1));
+                        //System.out.println("Anterior: " + V.get(Pos - 1));
+                        //System.out.println("Siguiente: " + V.get(Pos + 1));
 
-                        PAnterior = new Pair<>(String.valueOf(paqueteServidor.getAddress()), V.get(Pos - 1));
-                        PSiguiente = new Pair<>(String.valueOf(paqueteServidor.getAddress()), V.get(Pos + 1));
+                        PAnterior = new Pair<>(ListaNodos.get(V.get(Pos - 1)), V.get(Pos - 1));
+                        PSiguiente = new Pair<>(ListaNodos.get(V.get(Pos + 1)), V.get(Pos + 1));
 
-                        Ventana.AgregarSiguiente(String.valueOf(paqueteServidor.getAddress()) + ":" + V.get(Pos + 1));
-                        Ventana.AgregarAnterior(String.valueOf(paqueteServidor.getAddress()) + ":" + V.get(Pos - 1));
+                        Ventana.AgregarSiguiente(PSiguiente.getKey() + ":" + PSiguiente.getValue());
+                        Ventana.AgregarAnterior(PAnterior.getKey() + ":" + PAnterior.getValue());
 
                         MiNodo.setSiguiente(PSiguiente);
                         MiNodo.setAnterior(PAnterior);
+                        
                     }
 
                     //CD.ActualizarNodo(MiNodo);
