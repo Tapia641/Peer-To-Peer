@@ -17,10 +17,16 @@ public class Principal {
 
         /* REQUISITO INDISPENSABLE */
         PORT = Integer.parseInt(JOptionPane.showInputDialog("Ingresa el puerto:"));
+        
+        /*OBTENEMOS EL USUARIO DE CADA COMPUTADORA*/
+        File user = new File(System.getProperty("user.name"));
+        String url ="C:\\Users\\" + user + "\\Documents\\" + String.valueOf(PORT);
+        
+        /*CREAMOS EL DIRECTORIO EN SUS DOCUMENTOS*/
+        File dir = new File(url);
 
         /* CREAMOS LA CARPETA CON EL NOMBRE DEL PUERTO */
-        File directorio = new File("C:\\Users\\Tapia\\Desktop\\" + String.valueOf(PORT));
-        directorio.mkdir();
+        dir.mkdir();
 
         /* TRABAJANDO CON MULTICAST */
         ClienteMulticast CM = new ClienteMulticast(PORT);

@@ -74,7 +74,7 @@ public class Interfaz extends javax.swing.JFrame {
                 // Escribimos el archivo 
                 out.write(buffer);
 
-                System.out.println("Se recivio el archivo");
+                System.out.println("Se recibió el archivo");
 
                 out.flush();
                 //abrir_archivo();

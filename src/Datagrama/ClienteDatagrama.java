@@ -1,6 +1,5 @@
 package Datagrama;
 
-import Classes.NodoIP;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -8,7 +7,6 @@ import java.net.InetAddress;
 public class ClienteDatagrama extends Thread {
 
     public String Nombre_Archivo;
-    private String destino;
     public int PORT;
     private String res;
 

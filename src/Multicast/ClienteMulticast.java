@@ -87,7 +87,7 @@ public class ClienteMulticast extends Thread {
             while (true) {
 
                 /* ----------------COMENZAMOS A RECIBIR EL MENSAJE------------------ */
- /* OBTENEMOS EL MENSAJE DEL SERVIDOR */
+                /* OBTENEMOS EL MENSAJE DEL SERVIDOR */
                 DatagramPacket paqueteServidor = new DatagramPacket(new byte[100], 100);
                 clienteSocket.receive(paqueteServidor);
 
