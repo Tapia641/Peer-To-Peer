@@ -4,7 +4,6 @@ package Interface;
 import Classes.CTCPB;
 import Classes.MD5Checksum;
 import Classes.NodoIP;
-import Classes.STCPB;
 import Datagrama.ClienteDatagrama;
 import Flujo.ClienteArchivo;
 import Flujo.ServidorArchivo;
@@ -39,7 +38,7 @@ public class Interface extends javax.swing.JFrame {
     public Pair<String, Integer> P, PSiguiente, PAnterior;
     public CTCPB ClientTexto;
     public ServerTexto ST;
-    public Vector<String> ListaEncontrados;
+    public Vector<String> ListaEncontrados, Seleccionado;
 
     public Interface(int PORT) {
         CD = new ClienteDatagrama();
@@ -297,16 +296,26 @@ public class Interface extends javax.swing.JFrame {
                 }
             }
 
-            JOptionPane.showMessageDialog(null, "Se encontró los siguientes MD5 para el mismo archivo\n"
-                    + Iguales.toString());
+            Object opcion = JOptionPane.showInputDialog(null,
+                    "Select un MD5:\n ", "ShowInputDialog",
+                    JOptionPane.PLAIN_MESSAGE, null, Iguales.toArray(), "Numbers");
+            
+           Seleccionado = new Stack<>();
+            for (String s : ListaEncontrados) {
+                String aux[] = s.split(Pattern.quote(":"));
+                if (aux[2].equals(String.valueOf(opcion))) {
+                    Seleccionado.add(s);
+                }
+            }
 
-            String total = 1 + "/" + ListaEncontrados.size();
+            String total = 1 + "/" + Seleccionado.size();
             jTextAreaTexto.setText(jTextAreaTexto.getText() + "\n" + "Se obtiene: " + total + " de cada nodo.");
+            
             int j = 0;
             for (String s : ListaEncontrados) {
                 cad = s.split(Pattern.quote(":"));
 
-                if (Iguales.contains(cad[2])) {
+                if (Seleccionado.contains(s)) {
                     j++;
                     try {
                         RecibirArchivo(cad[0], PORT, Integer.parseInt(cad[1]), archivo, "Parte: " + j);
@@ -323,6 +332,7 @@ public class Interface extends javax.swing.JFrame {
             ListaEncontrados.clear();
         } else {
             JOptionPane.showMessageDialog(null, "No se encontró el archivo en la topología.");
+            jTextAreaTexto.setText(jTextAreaTexto.getText() + "\n" + "No se encontró el archivo en la topología.");
         }
 
     }//GEN-LAST:event_jButtonBuscarMouseClicked
@@ -344,7 +354,7 @@ public class Interface extends javax.swing.JFrame {
     public void RecibirArchivo(String IP, int PortDestino, int PortOrigen, String nombre_archivo, String parte) throws IOException, InterruptedException {
         JOptionPane.showMessageDialog(null, "Descargando de: " + PortOrigen + " A: " + PortDestino + " " + parte);
 
-        if (parte.equals("Parte: " + String.valueOf(ListaEncontrados.size() - 1))) {
+        if (parte.equals("Parte: " + String.valueOf(Seleccionado.size()))) {
             //Donde se va a guardar
             ServidorArchivo SA = new ServidorArchivo(nombre_archivo, PortDestino);
             SA.start();

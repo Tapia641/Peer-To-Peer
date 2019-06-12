@@ -107,9 +107,9 @@ public class ClienteMulticast extends Thread {
                 P = new Pair<>(IPaux, LocalPort);
 
                 /*VAMOS ACTUALIZANDO TEMPORIZADOR*/
-                //if (Temporizador.contains(P)) {
-                    
-                //}
+//                if (Temporizador.contains(P)) {
+//                                        
+//                }
 
                 /*SI ES UNO NUEVO*/
                 if (!V.contains(LocalPort)) {
