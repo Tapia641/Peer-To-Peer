@@ -1,3 +1,5 @@
+/*AUTOR: HERNÁNDEZ TAPIA LUIS ENRIQUE*/
+
 package Interface;
 
 import Classes.CTCPB;
@@ -32,11 +34,11 @@ public class Interface extends javax.swing.JFrame {
     public int PORT;
     public ClienteDatagrama CD;
     public Vector<Integer> V;
-    public Hashtable<Integer,String> ListaNodos;
+    public Hashtable<Integer, String> ListaNodos;
     public Pair<String, Integer> P, PSiguiente, PAnterior;
-    public STCPB ServerTexto;
     public CTCPB ClientTexto;
     public ServerTexto ST;
+    public Vector<String> ListaEncontrados;
 
     public Interface(int PORT) {
         CD = new ClienteDatagrama();
@@ -44,12 +46,13 @@ public class Interface extends javax.swing.JFrame {
         modelo = new DefaultListModel();
         V = new Stack<>();
         this.PORT = PORT;
+        ListaEncontrados = new Stack<>();
         ST = new ServerTexto();
         ST.start();
 
     }
-    
-    public void ActualizarHastable(Hashtable<Integer,String> ListaNodos){
+
+    public void ActualizarHastable(Hashtable<Integer, String> ListaNodos) {
         this.ListaNodos = ListaNodos;
     }
 
@@ -165,45 +168,80 @@ public class Interface extends javax.swing.JFrame {
         int i = -1;
         NodoIP Aux = MiNodo;
 
-        while (i != V.size()) {
-            
+        while (i < V.size()) {
+
             if (Existe(archivo, MiNodo.getActual().getValue())) {
 
-                /*CREAMOS EL TEXTO A MOSTRAR EN LA VENTANA*/
-                texto = "Se encontró el archivo en: " + MiNodo.getActual().getKey()
-                        + ":" + MiNodo.getActual().getValue()
-                        + " procedemos a descargarlo " + "\n";
-                
+//                /*CREAMOS EL TEXTO A MOSTRAR EN LA VENTANA*/
+//                texto = "Se encontró el archivo en: " + MiNodo.getActual().getKey()
+//                        + ":" + MiNodo.getActual().getValue()
+//                        + " procedemos a descargarlo " + "\n";
+
                 /*SE LO MANDAMOS*/
-                jTextAreaTexto.setText(texto);
-                System.out.println(MiNodo.getActual().getKey());
-                
-                ClientTexto = new CTCPB(MiNodo.getActual().getKey(), MiNodo.getActual().getValue(),
-                        "Tengo el archivo: " + archivo);
-                ClientTexto.Cliente();
+                //jTextAreaTexto.setText(texto);
 
-                //TODAVIA NO DEBE DESCARGAR
-                try {
-                    RecibirArchivo(MiNodo.getActual().getKey(), PORT, MiNodo.getActual().getValue(), archivo);
+                if (i == V.size() - 2) {
+                                        /*CREAMOS UNA INSTANCIA*/
+                    ClientTexto = new CTCPB(MiNodo.getActual().getKey(), MiNodo.getActual().getValue(),
+                            "Tengo el archivo: " + archivo + "."
+                            + MiNodo.getSiguiente().getKey() + ":" + MiNodo.getSiguiente().getValue());
 
-                } catch (IOException | InterruptedException ex) {
-                    ex.printStackTrace();
+                    /*LO EJECUTAMOS*/
+                    ClientTexto.Cliente();
+
+                    if (!ListaEncontrados.contains(MiNodo.getActual().getKey() + ":" + MiNodo.getActual().getValue())) {
+                        ListaEncontrados.add(MiNodo.getActual().getKey() + ":" + MiNodo.getActual().getValue());
+                    }
+                    break;
+
+                } else {
+
+                    /*CREAMOS UNA INSTANCIA*/
+                    ClientTexto = new CTCPB(MiNodo.getActual().getKey(), MiNodo.getActual().getValue(),
+                            "Tengo el archivo: " + archivo + " Pregunto al siguiente "
+                            + MiNodo.getSiguiente().getKey() + ":" + MiNodo.getSiguiente().getValue());
+
+                    /*LO EJECUTAMOS*/
+                    ClientTexto.Cliente();
+
+                    //TODAVIA NO DEBE DESCARGAR
+                    if (!ListaEncontrados.contains(MiNodo.getActual().getKey() + ":" + MiNodo.getActual().getValue())) {
+                        ListaEncontrados.add(MiNodo.getActual().getKey() + ":" + MiNodo.getActual().getValue());
+                    }
                 }
-                
 
-                break;
-
+                /*MÉTODO PARA DESCARGAR EN LA PRÁCTICA PASADA*/
+//                try {
+//                    RecibirArchivo(MiNodo.getActual().getKey(), PORT, MiNodo.getActual().getValue(), archivo);
+//
+//                } catch (IOException | InterruptedException ex) {
+//                    ex.printStackTrace();
+//                }
+                //break;
             } else {
-                String text = "El servidor " + MiNodo.getAnterior().getKey()
-                        + ":" + MiNodo.getAnterior().getValue()
-                        + " pregunta por el archivo: " + archivo
-                        + " No lo tengo, pregunto a: " + MiNodo.getSiguiente().getKey() + ":"
-                        + MiNodo.getSiguiente().getValue();
 
-                ClientTexto = new CTCPB(MiNodo.getActual().getKey(), MiNodo.getActual().getValue(), text
-                );
+                if (i == V.size() - 2) {
+                    /*CUANDO LLEGAMOS AL ÚLTIMO NODO*/
+                    String text = "El servidor " + MiNodo.getAnterior().getKey()
+                            + ":" + MiNodo.getAnterior().getValue()
+                            + " pregunta por el archivo: " + archivo
+                            + " No lo tengo.";
 
-                ClientTexto.Cliente();
+                    ClientTexto = new CTCPB(MiNodo.getActual().getKey(), MiNodo.getActual().getValue(), text);
+                    ClientTexto.Cliente();
+                    break;
+
+                } else {
+
+                    String text = "El servidor " + MiNodo.getAnterior().getKey()
+                            + ":" + MiNodo.getAnterior().getValue()
+                            + " pregunta por el archivo: " + archivo
+                            + " No lo tengo, pregunto a: " + MiNodo.getSiguiente().getKey() + ":"
+                            + MiNodo.getSiguiente().getValue();
+
+                    ClientTexto = new CTCPB(MiNodo.getActual().getKey(), MiNodo.getActual().getValue(), text);
+                    ClientTexto.Cliente();
+                }
 
             }
 
@@ -212,23 +250,33 @@ public class Interface extends javax.swing.JFrame {
 
         }
 
-        if (i == V.size()) {
-            jTextAreaTexto.setText("");
-            texto = "No se encontró el archivo especificado.";
-            MiNodo = Aux;
-            jTextAreaTexto.setText(texto);
+//        if (i == V.size()) {
+//            //jTextAreaTexto.setText("");
+//            texto = "No se encontró el archivo especificado.";
+//            MiNodo = Aux;
+//            jTextAreaTexto.setText(texto);
+//        }
+        if (!ListaEncontrados.isEmpty()) {
+            //System.err.println(ListaEncontrados.toString());
+            String texto_mostrar = "\n";
+            for (String textoaux : ListaEncontrados) {
+                texto_mostrar += textoaux + "\n";
+            }
+            jTextAreaTexto.setText(jTextAreaTexto.getText() + "\n" + "Se encontró en :\n" + texto_mostrar);
+            ListaEncontrados.clear();
+        } else {
+            JOptionPane.showMessageDialog(null, "No se encontró el archivo en la topología.");
         }
-
 
     }//GEN-LAST:event_jButtonBuscarMouseClicked
 
     public static boolean Existe(String nombre_archivo, int pos) {
-        
+
         /*OBTENEMOS EL USUARIO DE CADA COMPUTADORA*/
         File user = new File(System.getProperty("user.name"));
-        String url ="C:\\Users\\" + user + "\\Documents\\" + pos  + "\\" + nombre_archivo;
+        String url = "C:\\Users\\" + user + "\\Documents\\" + pos + "\\" + nombre_archivo;
         File filearchivo = new File(url);
-        
+
         if (filearchivo.exists()) {
             return true;
         } else {
@@ -236,16 +284,16 @@ public class Interface extends javax.swing.JFrame {
         }
     }
 
-    public void RecibirArchivo(String IP, int PortDestino, int PortOrigen, String nombre) throws IOException, InterruptedException {
+    public void RecibirArchivo(String IP, int PortDestino, int PortOrigen, String nombre_archivo) throws IOException, InterruptedException {
         JOptionPane.showMessageDialog(null, "Descargando de: " + PortOrigen + " A: " + PortDestino);
-        
+
         //Donde se va a guardar
-        ServidorArchivo SA = new ServidorArchivo(nombre, PortDestino);
+        ServidorArchivo SA = new ServidorArchivo(nombre_archivo, PortDestino);
         SA.start();
         sleep(1000);
 
         //Fichero a transferir     
-        ClienteArchivo CA = new ClienteArchivo(nombre, PortOrigen);
+        ClienteArchivo CA = new ClienteArchivo(nombre_archivo, PortOrigen, IP);
         CA.start();
     }
 
@@ -292,18 +340,18 @@ public class Interface extends javax.swing.JFrame {
 
     class ServerTexto extends Thread {
 
+        private String infoCliente = "";
+
         @Override
         public void run() {
             IniciarservidorTexto();
         }
 
         public void IniciarservidorTexto() {
-            
-            String infoCliente = "";
+
             /* SIEMPRE PONER EL SOCKET EN UN TRY-CATCH */
-            
             try {
-                
+
                 /* PUERTO EN EL QUE ESCUCHA PETICIONES */
                 ServerSocket socketServidor = new ServerSocket(PORT);
                 System.out.println("Esperando peticiones...");
@@ -311,7 +359,7 @@ public class Interface extends javax.swing.JFrame {
                 while (true) {
                     /* BLOQUEO HASTA QUE RECIBA ALGUNA PETICION DEL CLIENTE */
                     Socket socketCliente = socketServidor.accept();
-                    
+
                     /* ESTABLECEMOS EL CANAL DE ENTRADA */
                     BufferedReader entrada = new BufferedReader(new InputStreamReader(socketCliente.getInputStream()));
 
@@ -319,10 +367,10 @@ public class Interface extends javax.swing.JFrame {
                     PrintWriter salida = new PrintWriter(new OutputStreamWriter(socketCliente.getOutputStream()));
 
                     /* RECIBIMOS INFORMACION DEL CLIENTE */
-                    infoCliente = entrada.readLine();
-                    
+                    infoCliente = entrada.readLine() + "\n";
+
                     /* ENVIAMOS INFORMACION AL CLIENTE */
-                    jTextAreaTexto.setText(infoCliente + "\n");
+                    jTextAreaTexto.setText(infoCliente);
 
                     salida.flush();
                     salida.close();

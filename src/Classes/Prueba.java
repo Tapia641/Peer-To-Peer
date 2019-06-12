@@ -1,9 +1,7 @@
+/*AUTOR: HERNÁNDEZ TAPIA LUIS ENRIQUE*/
+
 package Classes;
 
-/**
- *
- * @author Tapia
- */
 public class Prueba {
     public static void main(String[] args) throws Exception{
         ListaCircular listaCircular = new ListaCircular();

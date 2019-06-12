@@ -25,6 +25,7 @@ public class ServidorMulticast extends Thread {
     }
 
     public void iniciarServidor() {
+        
         /* CREAMOS EL GRUPO */
         InetAddress grupo = null;
 
@@ -47,7 +48,7 @@ public class ServidorMulticast extends Thread {
 
                 /* ----------------COMENZAMOS A ENVIAR MENSAJE---------------- */
 
-                /* SE ENVIARA A TRAVES DEL 9000 DONDE ESTAN A LA ESCUCHA*/
+                /* SE ENVIARA A TRAVES DEL 7999 DONDE ESTAN A LA ESCUCHA*/
                 DatagramPacket paqueteMensaje = new DatagramPacket(b, b.length, grupo, 7999);
 
                 /* MANDANDO MENSAJE */

@@ -1,7 +1,7 @@
+/*AUTOR: HERNÁNDEZ TAPIA LUIS ENRIQUE*/
+
 package Classes;
 
-
-/* ALUMNO: HERNANDEZ TAPIA LUIS ENRIQUE */
 import java.net.Socket;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -18,8 +18,11 @@ public class CTCPB{
     }
 
     public void Cliente() {
+        
         /* SIEMPRE PONER EL SOCKET EN UN TRY-CATCH */
+        
         try {
+            
             /* CERRAMOS EL SOCKET DEL LADO DEL CLIENTE */
             Socket socketCliente = new Socket(IP, PORT);
 
@@ -35,6 +38,7 @@ public class CTCPB{
             salida.close();
 
             socketCliente.close();
+            
         } catch (Exception e) {
             e.printStackTrace();
         }

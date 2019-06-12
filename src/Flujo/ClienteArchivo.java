@@ -1,3 +1,5 @@
+/*AUTOR: HERNÁNDEZ TAPIA LUIS ENRIQUE*/
+
 package Flujo;
 
 
@@ -7,11 +9,12 @@ import java.net.Socket;
 public class ClienteArchivo extends Thread{
 
     private  int PORT;
-    private String nombre;
+    private String nombre, IP;
 
-    public ClienteArchivo(String nombre, int PORT) {
+    public ClienteArchivo(String nombre, int PORT, String IP) {
         this.PORT = PORT;
         this.nombre = nombre;
+        this.IP = IP;
     }
 
     @Override
@@ -35,7 +38,7 @@ public class ClienteArchivo extends Thread{
 
         try {
             final File localFile = new File(filename);
-            Socket client = new Socket("localhost", 9050);
+            Socket client = new Socket(IP, 9050);
             bis = new BufferedInputStream(new FileInputStream(localFile));
             bos = new BufferedOutputStream(client.getOutputStream());
             //Enviamos el nombre del fichero

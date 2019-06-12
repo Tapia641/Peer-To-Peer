@@ -1,3 +1,5 @@
+/*AUTOR: HERNÁNDEZ TAPIA LUIS ENRIQUE*/
+
 package Interface;
 
 import java.io.BufferedInputStream;

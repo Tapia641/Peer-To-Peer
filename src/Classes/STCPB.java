@@ -1,7 +1,7 @@
+/*AUTOR: HERNÁNDEZ TAPIA LUIS ENRIQUE*/
+
 package Classes;
 
-
-/* ALUMNO: HERNANDEZ TAPIA LUIS ENRIQUE */
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -24,17 +24,19 @@ public class STCPB extends Thread {
     }
 
     public String Servidor() {
+        
         /* SIEMPRE PONER EL SOCKET EN UN TRY-CATCH */
+        
         try {
+            
             /* PUERTO EN EL QUE ESCUCHA PETICIONES */
             ServerSocket socketServidor = new ServerSocket(PORT);
             System.out.println("Esperando cliente...");
 
             while (true) {
+                
                 /* BLOQUEO HASTA QUE RECIBA ALGUNA PETICION DEL CLIENTE */
                 Socket socketCliente = socketServidor.accept();
-                //System.out.println(
-                //      "Conexion establecida desde " + socketCliente.getInetAddress() + ":" + socketCliente.getPort());
 
                 /* ESTABLECEMOS EL CANAL DE ENTRADA */
                 BufferedReader entrada = new BufferedReader(new InputStreamReader(socketCliente.getInputStream()));
@@ -46,11 +48,7 @@ public class STCPB extends Thread {
                 infoCliente = entrada.readLine();
                 System.out.println("Recibimos un mensaje del cliente");
                 System.out.println("Mensaje: " + infoCliente);
-
-                /* ENVIAMOS INFORMACION AL CLIENTE */
-                //System.out.println("Enviando respuesta...");
-                //String resCliente = "Hola cliente, soy el servidor.";
-                //salida.println(resCliente);
+        
                 // SE LIMPIA EL FLUJO EN ORDEN
                 salida.flush();
                 salida.close();
