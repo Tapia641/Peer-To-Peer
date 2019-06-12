@@ -1,8 +1,8 @@
 /*AUTOR: HERNÁNDEZ TAPIA LUIS ENRIQUE*/
-
 package Interface;
 
 import Classes.CTCPB;
+import Classes.MD5Checksum;
 import Classes.NodoIP;
 import Classes.STCPB;
 import Datagrama.ClienteDatagrama;
@@ -179,9 +179,8 @@ public class Interface extends javax.swing.JFrame {
 
                 /*SE LO MANDAMOS*/
                 //jTextAreaTexto.setText(texto);
-
                 if (i == V.size() - 2) {
-                                        /*CREAMOS UNA INSTANCIA*/
+                    /*CREAMOS UNA INSTANCIA*/
                     ClientTexto = new CTCPB(MiNodo.getActual().getKey(), MiNodo.getActual().getValue(),
                             "Tengo el archivo: " + archivo + "."
                             + MiNodo.getSiguiente().getKey() + ":" + MiNodo.getSiguiente().getValue());
@@ -189,9 +188,22 @@ public class Interface extends javax.swing.JFrame {
                     /*LO EJECUTAMOS*/
                     ClientTexto.Cliente();
 
-                    if (!ListaEncontrados.contains(MiNodo.getActual().getKey() + ":" + MiNodo.getActual().getValue())) {
-                        ListaEncontrados.add(MiNodo.getActual().getKey() + ":" + MiNodo.getActual().getValue());
+                    File user = new File(System.getProperty("user.name"));
+                    String url = "C:\\Users\\" + user + "\\Documents\\" + MiNodo.getActual().getValue() + "\\" + archivo;
+                    MD5Checksum MD = new MD5Checksum();
+                    String MD5 = "";
+                    try {
+                        MD5 = MD.getMD5Checksum(url);
+                    } catch (Exception ex) {
+                        Logger.getLogger(Interface.class.getName()).log(Level.SEVERE, null, ex);
                     }
+
+                    if (!ListaEncontrados.contains(MiNodo.getActual().getKey() + ":" + MiNodo.getActual().getValue() + ":" + MD5)) {
+
+                        ListaEncontrados.add(MiNodo.getActual().getKey() + ":" + MiNodo.getActual().getValue() + ":" + MD5);
+                        //ListaEncontrados.add(MiNodo.getActual().getKey() + ":" + MiNodo.getActual().getValue());
+                    }
+
                     break;
 
                 } else {
@@ -204,9 +216,20 @@ public class Interface extends javax.swing.JFrame {
                     /*LO EJECUTAMOS*/
                     ClientTexto.Cliente();
 
-                    //TODAVIA NO DEBE DESCARGAR
-                    if (!ListaEncontrados.contains(MiNodo.getActual().getKey() + ":" + MiNodo.getActual().getValue())) {
-                        ListaEncontrados.add(MiNodo.getActual().getKey() + ":" + MiNodo.getActual().getValue());
+                    File user = new File(System.getProperty("user.name"));
+                    String url = "C:\\Users\\" + user + "\\Documents\\" + MiNodo.getActual().getValue() + "\\" + archivo;
+                    MD5Checksum MD = new MD5Checksum();
+                    String MD5 = "";
+                    try {
+                        MD5 = MD.getMD5Checksum(url);
+                    } catch (Exception ex) {
+                        Logger.getLogger(Interface.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+
+                    //LO AGREGAMOS A LA LISTA
+                    if (!ListaEncontrados.contains(MiNodo.getActual().getKey() + ":" + MiNodo.getActual().getValue() + ":" + MD5)) {
+
+                        ListaEncontrados.add(MiNodo.getActual().getKey() + ":" + MiNodo.getActual().getValue() + ":" + MD5);
                     }
                 }
 
@@ -222,10 +245,7 @@ public class Interface extends javax.swing.JFrame {
 
                 if (i == V.size() - 2) {
                     /*CUANDO LLEGAMOS AL ÚLTIMO NODO*/
-                    String text = "El servidor " + MiNodo.getAnterior().getKey()
-                            + ":" + MiNodo.getAnterior().getValue()
-                            + " pregunta por el archivo: " + archivo
-                            + " No lo tengo.";
+                    String text = "Terminó la busqueda.";
 
                     ClientTexto = new CTCPB(MiNodo.getActual().getKey(), MiNodo.getActual().getValue(), text);
                     ClientTexto.Cliente();

@@ -17,7 +17,6 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Stack;
 import java.util.Vector;
@@ -107,7 +106,7 @@ public class ClienteMulticast extends Thread {
                 IPaux = IPaux.replaceAll(Pattern.quote("/"), "");
                 
                 P = new Pair<>(IPaux, LocalPort);
-
+                
                 /*SI ES UNO NUEVO*/
                 if (!V.contains(LocalPort)) {
                     V.add(LocalPort);
