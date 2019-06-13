@@ -16,7 +16,6 @@ import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
 import java.util.Vector;
@@ -97,7 +96,7 @@ public class ClienteMulticast extends Thread {
             while (true) {
 
                 /* ----------------COMENZAMOS A RECIBIR EL MENSAJE------------------ */
- /* OBTENEMOS EL MENSAJE DEL SERVIDOR */
+                /* OBTENEMOS EL MENSAJE DEL SERVIDOR */
                 DatagramPacket paqueteServidor = new DatagramPacket(new byte[100], 100);
                 clienteSocket.receive(paqueteServidor);
 
@@ -144,13 +143,6 @@ public class ClienteMulticast extends Thread {
                     ListaTiempo.replace(P, 11);
                 }
 
-                /*COMPROBAMOS QUE ESTEN ACTIVOS*/
-                for (Map.Entry<Pair<String, Integer>, Integer> entry : ListaTiempo.entrySet()) {
-
-                    Pair<String, Integer> key = entry.getKey();
-                    Integer value = entry.getValue();
-
-                }
 
                 /*SI ES UNO NUEVO*/
                 if (!V.contains(LocalPort)) {
